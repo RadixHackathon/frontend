@@ -14,31 +14,54 @@ import {
   ComponentAddress,
 } from '@radixdlt/radix-dapp-toolkit';
 
-import { TransactionApi} from '@radixdlt/babylon-gateway-api-sdk';
+import { TransactionApi } from '@radixdlt/babylon-gateway-api-sdk';
 
 // const StateContext = createContext();
 export default function Home() {
-  // const [accountAddress, setAccountAddress] = useState();
-  const accountAddress = 'account_tdx_b_1pqmg9ewm4cmczvykk483k76y50l0d8f7urmec36kj8jq529jsn';
-  // const [componentAddress, setComponentAddress] = useState();
-  let componentAddress = 'component_tdx_b_1qxnw7xu6fvfxy280uceq9shqe3a4t8jn3khxqjd4tm2smk8xa0';
+  const [accountAddress, setAccountAddress] = useState();
+  const componentAddress = 'component_tdx_b_1q2h4tzz6gap02vfne5q7xa7h2g0ak62lulgxlv4kd0nsncakph';
   const [balance, setBalance] = useState();
   const [accountName, setAccountName] = useState();
+  const [traderBadge, setTraderBadge] = useState();
 
   // Instantiate Gateway SDK
   const transactionApi = new TransactionApi();
 
   // Instantiate Radix Dapp Toolkit
   const xrdAddress = 'resource_tdx_b_1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8z96qp';
-  const alkyneFi_package = 'package_tdx_b_1qy0u0yuw9rph95w80356gtug8rhmsvuam9m07svsd08sjxm583';
-  const dAppId = 'account_tdx_b_1ppglnkmukh36l2dfw3uygvgjf2jsfypl885u9840md7swrvpmj';
+  const alkyneFi_package = 'package_tdx_b_1q9xsqncvnxkd0vtqu7j8xvm8sprwdl9xzzzwl0kglvgszhfknm';
+  const dAppId = 'account_tdx_b_1pqaugn2dulgq82td23c65qjgke2wfuq3cjtm224d0emqt7hj2n';
 
-  let rdt = RadixDappToolkit
+  let [rdt, setRdt] = useState();
   useEffect(() => {
-    rdt = RadixDappToolkit(
-      { dAppDefinitionAddress: dAppId, dAppName: 'AlkyneFi' },
-      { networkId: 11 })
-    console.log(rdt.requestData.accounts);
+    setRdt(
+      RadixDappToolkit(
+        {
+          dAppDefinitionAddress: dAppId,
+          dAppName: 'AlkyneFi',
+        },
+        (requestData) => {
+          requestData({
+            accounts: { quantifier: 'atLeast', quantity: 1 },
+          }).map(({ data: { accounts } }) => {
+            // set your application state
+            // console.log(accounts);
+          });
+        },
+        {
+          networkId: 11,
+          onDisconnect: () => {
+            // clear your application state
+          },
+          onInit: ({ accounts }) => {
+            // set your initial application state
+            console.log("Acc", accounts);
+            setAccountAddress(accounts[0].address);
+            setAccountName(accounts[0].label);
+          },
+        }
+      )
+    );
   }, []);
 
   console.log('dApp Toolkit: ', rdt);
@@ -70,8 +93,6 @@ export default function Home() {
     let commitReceipt = await submitTransaction(manifest);
 
     console.log(commitReceipt);
-    // componentAddress = commitReceipt.details.referenced_global_entities[0];
-    // resourceAddress = commitReceipt.details.referenced_global_entities[1];
   };
 
   const create_and_fund_wallet = async (amount) => {
@@ -93,7 +114,7 @@ export default function Home() {
     console.log(JSON.stringify(commitReceipt.details.receipt, null, 2));
   };
 
-  const create_and_fund_wallet_rtm = async (amount ) => {
+  const create_and_fund_wallet_rtm = async (amount) => {
     let manifest = `CALL_METHOD
     ComponentAddress("component_sim1qgehpqdhhr62xh76wh6gppnyn88a0uau68epljprvj3sxknsqr")
     "lock_fee"
@@ -118,27 +139,45 @@ CALL_METHOD
 CALL_METHOD
     ComponentAddress("${accountAddress}")
     "deposit_batch"
-    Expression("ENTIRE_WORKTOP");`
+    Expression("ENTIRE_WORKTOP");`;
 
     // Submit transaction
     let commitReceipt = await submitTransaction(manifest);
 
     // Show the receipt on the DOM
-    console.log(JSON.stringify(commitReceipt.details.receipt, null, 2));
-  }
+    console.log(JSON.stringify(commitReceipt.details.receipt));
+  };
 
   const fund_existing_wallet = async (amount, owner_badge) => {
     // ************ Create the manifest for the transaction ************
-    let manifest = new ManifestBuilder()
-      .callMethod(accountAddress, 'lock_fee', ['Decimal("10")'])
-      .callMethod(accountAddress, 'create_proof', [ResourceAddress(xrdAddress)])
-      .withdrawFromAccountByAmount(accountAddress, Number(amount), xrdAddress)
-      .callMethod(accountAddress, 'create_proof', [ResourceAddress(owner_badge)])
-      .popFromAuthZone('owner_badge')
-      .takeFromWorktopByAmount(Number(amount), xrdAddress, 'xrd_bucket')
-      .callMethod(componentAddress, 'create_and_fund_wallet', [Bucket('xrd_bucket'), Proof('owner_badge')])
-      .build()
-      .toString();
+    let manifest = `CALL_METHOD
+    ComponentAddress("${account}")
+    "create_proof_by_amount"
+    Decimal("1")
+    ResourceAddress("${traderBadge}");
+POP_FROM_AUTH_ZONE Proof("my_proof");
+CALL_METHOD
+    ComponentAddress("component_sim1qgehpqdhhr62xh76wh6gppnyn88a0uau68epljprvj3sxknsqr")
+    "lock_fee"
+    Decimal("100");
+CALL_METHOD
+    ComponentAddress("${account}")
+    "withdraw_by_amount"
+    Decimal("180")
+    ResourceAddress("${xrd}");
+TAKE_FROM_WORKTOP
+    ResourceAddress("${xrd}")
+    Bucket("bucket1");    
+CALL_METHOD
+    ComponentAddress("${component}")
+    "fund_existing_wallet"
+    Bucket("bucket1")
+    Proof("my_proof")
+    ;
+CALL_METHOD
+    ComponentAddress("${account}")
+    "deposit_batch"
+    Expression("ENTIRE_WORKTOP");`
 
     // Submit transaction
     let commitReceipt = await submitTransaction(manifest);
@@ -146,23 +185,31 @@ CALL_METHOD
     console.log(JSON.stringify(commitReceipt.details.receipt, null, 2));
   };
 
-  const trade = async (pool_address, amount, resource_address, owner_badge) => {
+  const trade = async (pool_address, amount, resource_address) => {
     // ************ Create the manifest for the transaction ************
-    let manifest = new ManifestBuilder()
-      .callMethod(accountAddress, 'lock_fee', ['Decimal("10")'])
-      .callMethod(accountAddress, 'create_proof', [ResourceAddress(xrdAddress)])
-      .callMethod(accountAddress, 'create_proof', [ResourceAddress(owner_badge)])
-      .popFromAuthZone('owner_badge')
-      .callMethod(componentAddress, 'trade', [
-        ComponentAddress(pool_address),
-        Decimal(amount),
-        ResourceAddress(resource_address),
-        Proof('owner_badge'),
-      ])
-      .build()
-      .toString();
-
-    console.log('trade manifest: ', manifest);
+    let manifest = `CALL_METHOD
+    ComponentAddress("${accountAddress}")
+    "create_proof_by_amount"
+    Decimal("1")
+    ResourceAddress("${traderBadge}");
+POP_FROM_AUTH_ZONE Proof("my_proof");
+CALL_METHOD
+    ComponentAddress("component_sim1qgehpqdhhr62xh76wh6gppnyn88a0uau68epljprvj3sxknsqr")
+    "lock_fee"
+    Decimal("100");  
+CALL_METHOD
+    ComponentAddress("${component}")
+    "trade"
+    ComponentAddress("${radiswapPool1}")
+    Decimal("1")
+    ResourceAddress("${secondToken}")
+    # ResourceAddress("${xrd}")
+    Proof("my_proof")
+    ;
+CALL_METHOD
+    ComponentAddress("${accountAddress}")
+    "deposit_batch"
+    Expression("ENTIRE_WORKTOP");`
 
     // fetch commit reciept from gateway api
     let commitReceipt = await submitTransaction(manifest);
@@ -171,7 +218,65 @@ CALL_METHOD
     console.log(JSON.stringify(commitReceipt.details.receipt, null, 2));
   };
 
-  const withdraw_payment = async () => {};
+  const withdraw_payment = async () => {
+    let manifest = `CALL_METHOD
+    ComponentAddress("${accountAddress}")
+    "create_proof_by_amount"
+    Decimal("1")
+    ResourceAddress("${traderBadge}");
+POP_FROM_AUTH_ZONE Proof("my_proof");
+CALL_METHOD
+    ComponentAddress("component_sim1qgehpqdhhr62xh76wh6gppnyn88a0uau68epljprvj3sxknsqr")
+    "lock_fee"
+    Decimal("100");  
+CALL_METHOD
+    ComponentAddress("${component}")
+    "withdraw_payment"
+    Decimal("1")
+    # ResourceAddress("${secondToken}")
+    ResourceAddress("${xrd}")
+    Proof("my_proof")
+    ;
+CALL_METHOD
+    ComponentAddress("${accountAddress}")
+    "deposit_batch"
+    Expression("ENTIRE_WORKTOP");`
+
+    
+    // fetch commit reciept from gateway api
+    let commitReceipt = await submitTransaction(manifest);
+
+    // Show the receipt on the DOM
+    console.log(JSON.stringify(commitReceipt.details.receipt));
+  };
+
+  const check_investments = async () => {
+    let manifest = `CALL_METHOD
+    ComponentAddress("${accountAddress}")
+    "create_proof_by_amount"
+    Decimal("1")
+    ResourceAddress("${traderBadge}");
+POP_FROM_AUTH_ZONE Proof("my_proof");
+CALL_METHOD
+    ComponentAddress("component_sim1qgehpqdhhr62xh76wh6gppnyn88a0uau68epljprvj3sxknsqr")
+    "lock_fee"
+    Decimal("100");  
+CALL_METHOD
+    ComponentAddress("${component}")
+    "check_wallets"
+    Proof("my_proof")
+    ;
+CALL_METHOD
+    ComponentAddress("${accountAddress}")
+    "deposit_batch"
+    Expression("ENTIRE_WORKTOP");`
+
+    // fetch commit reciept from gateway api
+    let commitReceipt = await submitTransaction(manifest);
+
+    // Show the receipt on the DOM
+    console.log(JSON.stringify(commitReceipt.details.receipt));
+  };
 
   async function submitTransaction(manifest) {
     console.log(manifest);
@@ -259,8 +364,11 @@ CALL_METHOD
         <div className="flex flex-row justify-between">
           <div className="grid">
             <p className="text-xl">Wallet Address</p>
+            <p className="ml-5 text-xl leading-7 text-gray-200">
+              {accountName ? accountName : 'Not connected'}
+            </p>
             <p className="ml-5 text-xl leading-7 text-gray-500">
-              {true ? '1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2' : 'Not Connected'}
+              {accountAddress ? accountAddress : 'Not Connected'}
             </p>
             <p className="text-xl">Balance</p>
             <p className="ml-5 text-xl leading-7 text-gray-500">$1000.00</p>
@@ -285,12 +393,22 @@ CALL_METHOD
             <Pools name={pool.name} address={pool.address} balance={pool.balance} apr={pool.apr} />
           ))}
         </div>
+        <div>
+            <h2 className="text-2xl font-semibold text-gray-300 ">
+              Past Investments
+            </h2>
+            <div className="grid row-auto p-5">
+              <Rows />
+              <Rows />
+            </div>
+          </div>
+
       </main>
     </div>
   );
 }
 
-function Investment({ amt, setModal, setModalType }) {
+function Investment({ amt, setModal, setModalType, create_and_fund_wallet_rtm }) {
   return (
     <div className=" bg-white text-black p-5 rounded-lg flex flex-col gap-4 items-center justify-center opacity-80 hover:opacity-100 cursor-pointer">
       <div className="flex-row flex gap-4 items-center">
@@ -301,11 +419,12 @@ function Investment({ amt, setModal, setModalType }) {
         <button
           className="bg-blue-600 rounded-lg p-2 text-white"
           onClick={() => {
+            create_and_fund_wallet_rtm(1);
             setModal(true);
             setModalType('Invest');
           }}
         >
-          Invest
+          Deposit
         </button>
         <button
           className="bg-blue-600 rounded-lg p-2 text-white"
@@ -402,4 +521,14 @@ function ModalAmount({ setModal, modalType }) {
       </div>
     </div>
   );
+}
+
+function Rows() {
+  return (
+    <div className="grid grid-cols-3 text-center px-5">
+      <p className="border"> Investment 1</p>
+      <p className="border"> Investment 2</p>
+      <p className="border"> Investment 3</p>
+    </div>
+  )
 }
