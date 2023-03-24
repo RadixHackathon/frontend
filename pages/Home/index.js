@@ -115,14 +115,7 @@ export default function Home() {
   };
 
   const create_and_fund_wallet_rtm = async (amount) => {
-    let manifest = `CALL_METHOD
-    ComponentAddress("component_sim1qgehpqdhhr62xh76wh6gppnyn88a0uau68epljprvj3sxknsqr")
-    "lock_fee"
-    Decimal("100");
-    CALL_METHOD
-    ComponentAddress("${accountAddress}")
-    "create_proof"
-    ResourceAddress("${xrdAddress}");
+    let manifest = `
 CALL_METHOD
     ComponentAddress("${accountAddress}")
     "withdraw_by_amount"
@@ -141,6 +134,7 @@ CALL_METHOD
     "deposit_batch"
     Expression("ENTIRE_WORKTOP");`;
 
+    console.log(manifest);
     // Submit transaction
     let commitReceipt = await submitTransaction(manifest);
 
@@ -151,7 +145,7 @@ CALL_METHOD
   const fund_existing_wallet = async (amount, owner_badge) => {
     // ************ Create the manifest for the transaction ************
     let manifest = `CALL_METHOD
-    ComponentAddress("${account}")
+    ComponentAddress("${accountAddress}")
     "create_proof_by_amount"
     Decimal("1")
     ResourceAddress("${traderBadge}");
@@ -161,7 +155,7 @@ CALL_METHOD
     "lock_fee"
     Decimal("100");
 CALL_METHOD
-    ComponentAddress("${account}")
+    ComponentAddress("${accountAddress}")
     "withdraw_by_amount"
     Decimal("180")
     ResourceAddress("${xrd}");
@@ -175,7 +169,7 @@ CALL_METHOD
     Proof("my_proof")
     ;
 CALL_METHOD
-    ComponentAddress("${account}")
+    ComponentAddress("${accountAddress}")
     "deposit_batch"
     Expression("ENTIRE_WORKTOP");`
 
@@ -258,9 +252,9 @@ CALL_METHOD
     ResourceAddress("${traderBadge}");
 POP_FROM_AUTH_ZONE Proof("my_proof");
 CALL_METHOD
-    ComponentAddress("component_sim1qgehpqdhhr62xh76wh6gppnyn88a0uau68epljprvj3sxknsqr")
+    ComponentAddress("${accountAddress}")
     "lock_fee"
-    Decimal("100");  
+    Decimal("10");  
 CALL_METHOD
     ComponentAddress("${component}")
     "check_wallets"
@@ -358,14 +352,14 @@ CALL_METHOD
 
       <Header />
       <radix-connect-button />
-      <button onClick={() => create_and_fund_wallet_rtm(1)}>Fund Existing Wallet</button>
+      {/* <button onClick={() => create_and_fund_wallet_rtm(1)}>Fund Existing Wallet</button> */}
       <main className=" flex flex-1 w-full flex-col p-12 sm:mt-20 mt-20 background-gradient gap-16">
         {modal && <ModalAmount setModal={setModal} modalType={modalType} />}
         <div className="flex flex-row justify-between">
           <div className="grid">
             <p className="text-xl">Wallet Address</p>
             <p className="ml-5 text-xl leading-7 text-gray-200">
-              {accountName ? accountName : 'Not connected'}
+              {accountName ? `Account name: ${accountName}` : 'Not connected'}
             </p>
             <p className="ml-5 text-xl leading-7 text-gray-500">
               {accountAddress ? accountAddress : 'Not Connected'}
