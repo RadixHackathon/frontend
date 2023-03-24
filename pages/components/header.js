@@ -1,9 +1,11 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { RadixDappToolkit } from '@radixdlt/radix-dapp-toolkit';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function Header({ photo }) {
+  const [rdtState, setRdtState] = useState();
+
   useEffect(() => {
     const rdt = RadixDappToolkit(
       {
@@ -27,6 +29,10 @@ export default function Header({ photo }) {
         },
       }
     );
+    console.log("Rdt: ", rdt.state$.subscribe());
+    // const subscription = rdt?.state$.subscribe((state) => {
+    //   setState(state);
+    // });
   }, []);
 
   return (
@@ -36,10 +42,8 @@ export default function Header({ photo }) {
         <h1 className="sm:text-3xl text-xl font-bold ml-2 tracking-tight">AlkyneFi</h1>
       </Link>
 
-      <div
-        className="flex max-w-fit items-center justify-center space-x-2 text-white px-5 py-2 text-sm shadow-md font-medium transition"
-      >
-        <radix-connect-button />
+      <div className="flex max-w-fit items-center justify-center space-x-2 text-white px-5 py-2 text-sm shadow-md font-medium transition">
+        {/* <radix-connect-button /> */}
       </div>
     </header>
   );

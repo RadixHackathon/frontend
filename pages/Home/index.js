@@ -3,10 +3,14 @@ import Head from 'next/head'
 import SquigglyLines from '../components/SquigglyLines'
 import { useState } from 'react'
 import Router from 'next/router'
+import { useConnected } from '@/context/useConnected'
+
 export default function Home() {
   const [wallet, setWallet] = useState('')
   const [modal, setModal] = useState(false)
   const [modalType, setModalType] = useState('')
+  const connected = useConnected();
+
   const [pools, setPools] = useState([
     {
       name: 'Pool 1',
@@ -57,7 +61,7 @@ export default function Home() {
           <div className="grid">
             <p className="text-xl">Wallet Address</p>
             <p className="ml-5 text-xl leading-7 text-gray-500">
-              1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2
+              {connected?"1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2":"Not Connected"}
             </p>
             <p className="text-xl">Balance</p>
             <p className="ml-5 text-xl leading-7 text-gray-500">$1000.00</p>
