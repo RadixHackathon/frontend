@@ -3,7 +3,7 @@ import Head from 'next/head'
 import SquigglyLines from '../components/SquigglyLines'
 import { useState } from 'react'
 import Router from 'next/router'
-import { useConnected } from '@/context/useConnected'
+import { useConnected } from '@/components/useConnected'
 
 export default function Home() {
   const [wallet, setWallet] = useState('')

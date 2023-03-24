@@ -4,36 +4,36 @@ import { RadixDappToolkit } from '@radixdlt/radix-dapp-toolkit';
 import { useEffect, useState } from 'react';
 
 export default function Header({ photo }) {
-  const [rdtState, setRdtState] = useState();
+  // const [rdtState, setRdtState] = useState();
 
-  useEffect(() => {
-    const rdt = RadixDappToolkit(
-      {
-        dAppDefinitionAddress: 'account_tdx_b_1ppglnkmukh36l2dfw3uygvgjf2jsfypl885u9840md7swrvpmj',
-        dAppName: 'AlkyneFi',
-      },
-      (requestData) => {
-        requestData({
-          accounts: { quantifier: 'atLeast', quantity: 1 },
-        }).map(({ data: { accounts } }) => {
-          // set your application state
-        });
-      },
-      {
-        networkId: 11,
-        onDisconnect: () => {
-          // clear your application state
-        },
-        onInit: ({ accounts }) => {
-          // set your initial application state
-        },
-      }
-    );
-    console.log("Rdt: ", rdt.state$.subscribe());
-    // const subscription = rdt?.state$.subscribe((state) => {
-    //   setState(state);
-    // });
-  }, []);
+  // useEffect(() => {
+  //   const rdt = RadixDappToolkit(
+  //     {
+  //       dAppDefinitionAddress: 'account_tdx_b_1ppglnkmukh36l2dfw3uygvgjf2jsfypl885u9840md7swrvpmj',
+  //       dAppName: 'AlkyneFi',
+  //     },
+  //     (requestData) => {
+  //       requestData({
+  //         accounts: { quantifier: 'atLeast', quantity: 1 },
+  //       }).map(({ data: { accounts } }) => {
+  //         // set your application state
+  //       });
+  //     },
+  //     {
+  //       networkId: 11,
+  //       onDisconnect: () => {
+  //         // clear your application state
+  //       },
+  //       onInit: ({ accounts }) => {
+  //         // set your initial application state
+  //       },
+  //     }
+  //   );
+  //   console.log("Rdt: ", rdt.state$.subscribe());
+  //   // const subscription = rdt?.state$.subscribe((state) => {
+  //   //   setState(state);
+  //   // });
+  // }, []);
 
   return (
     <header className="flex flex-row xs:flex-row justify-between items-center w-full mt-3 border-b pb-7 sm:px-4 px-2 border-gray-500 gap-2">
@@ -43,7 +43,7 @@ export default function Header({ photo }) {
       </Link>
 
       <div className="flex max-w-fit items-center justify-center space-x-2 text-white px-5 py-2 text-sm shadow-md font-medium transition">
-        {/* <radix-connect-button /> */}
+        <radix-connect-button />
       </div>
     </header>
   );
