@@ -1,6 +1,5 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { RadixDappToolkit } from '@radixdlt/radix-dapp-toolkit';
 import { useEffect, useState } from 'react';
 
 export default function Header({ photo }) {
@@ -43,7 +42,6 @@ export default function Header({ photo }) {
       </Link>
 
       <div className="flex max-w-fit items-center justify-center space-x-2 text-white px-5 py-2 text-sm shadow-md font-medium transition">
-        <radix-connect-button />
       </div>
     </header>
   );
