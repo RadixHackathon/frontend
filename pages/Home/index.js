@@ -280,7 +280,8 @@ CALL_METHOD
         transactionManifest: String(manifest),
         version: 1,
       })
-      .map((response) => response.transactionHash);
+      
+    console.log('Result: ', result);
 
     if (result.isErr()) {
       throw result.error;
@@ -288,8 +289,8 @@ CALL_METHOD
 
     let status = await transactionApi.transactionStatus({
       transactionStatusRequest: {
-        intent_hash_hex: result.value.transactionIntentHash,
-      },
+        intent_hash_hex: result.value.transactionIntentHash
+      }
     });
     console.log('Transaction status: ', status);
 
@@ -298,10 +299,10 @@ CALL_METHOD
       transactionCommittedDetailsRequest: {
         transaction_identifier: {
           type: 'intent_hash',
-          value_hex: result.value.transactionIntentHash,
-        },
-      },
-    });
+          value_hex: result.value.transactionIntentHash
+        }
+      }
+    })
     console.log('Commit receipt: ', commitReceipt);
 
     return commitReceipt;
@@ -352,7 +353,7 @@ CALL_METHOD
 
       <Header />
       <radix-connect-button />
-      {/* <button onClick={() => create_and_fund_wallet_rtm(1)}>Fund Existing Wallet</button> */}
+      <button onClick={() => create_and_fund_wallet_rtm(1)}>Fund Existing Wallet</button>
       <main className=" flex flex-1 w-full flex-col p-12 sm:mt-20 mt-20 background-gradient gap-16">
         {modal && <ModalAmount setModal={setModal} modalType={modalType} />}
         <div className="flex flex-row justify-between">
