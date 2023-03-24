@@ -14,7 +14,7 @@ import {
   ComponentAddress,
 } from '@radixdlt/radix-dapp-toolkit';
 
-import { TransactionApi, StateApi, StatusApi, StreamApi } from '@radixdlt/babylon-gateway-api-sdk';
+import { TransactionApi} from '@radixdlt/babylon-gateway-api-sdk';
 
 // const StateContext = createContext();
 export default function Home() {
@@ -27,24 +27,19 @@ export default function Home() {
 
   // Instantiate Gateway SDK
   const transactionApi = new TransactionApi();
-  const stateApi = new StateApi();
-  const statusApi = new StatusApi();
-  const streamApi = new StreamApi();
 
   // Instantiate Radix Dapp Toolkit
   const xrdAddress = 'resource_tdx_b_1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8z96qp';
   const alkyneFi_package = 'package_tdx_b_1qy0u0yuw9rph95w80356gtug8rhmsvuam9m07svsd08sjxm583';
   const dAppId = 'account_tdx_b_1ppglnkmukh36l2dfw3uygvgjf2jsfypl885u9840md7swrvpmj';
 
-  let rdt = RadixDappToolkit(
-  // useEffect(() => {
-  //   rdt = RadixDappToolkit(
+  let rdt = RadixDappToolkit
+  useEffect(() => {
+    rdt = RadixDappToolkit(
       { dAppDefinitionAddress: dAppId, dAppName: 'AlkyneFi' },
       { networkId: 11 })
-
-
-    // console.log(rdt.requestData.accounts);
-  // }, []);
+    console.log(rdt.requestData.accounts);
+  }, []);
 
   console.log('dApp Toolkit: ', rdt);
 
